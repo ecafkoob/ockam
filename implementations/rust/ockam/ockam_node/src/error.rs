@@ -1,5 +1,5 @@
 use core::fmt::Debug;
-use tokio::{self, sync::mpsc::error::SendError};
+use crate::tokio::{self, sync::mpsc::error::SendError};
 
 /// Error declarations.
 #[derive(Clone, Copy, Debug)]
