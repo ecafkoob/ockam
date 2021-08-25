@@ -3,6 +3,7 @@ name = "ockam_channel"
 version = "0.24.0-dev"
 authors = ["Ockam Developers"]
 edition = "2018"
+resolver = "2"
 license = "Apache-2.0"
 homepage = "https://github.com/ockam-network/ockam"
 repository = "https://github.com/ockam-network/ockam/tree/develop/implementations/rust/ockam/ockam_vault"
@@ -24,7 +25,7 @@ std = ["ockam_core/std", "ockam_key_exchange_core/std", "ockam_key_exchange_xx/s
 
 # Feature: "no_std" enables functionality required for platforms
 # without the standard library.
-no_std = ["ockam_core/no_std", "ockam_key_exchange_core/no_std", "ockam_key_exchange_xx/no_std", "ockam_node/no_std", "ockam_vault_core/no_std", "ockam_vault_sync_core/no_std", "ockam_vault/no_std", "rand_pcg"]
+no_std = ["ockam_core/no_std", "ockam_core/unsafe_random", "ockam_key_exchange_core/no_std", "ockam_key_exchange_xx/no_std", "ockam_node/no_std", "ockam_vault_core/no_std", "ockam_vault_sync_core/no_std", "ockam_vault/no_std", "rand_pcg"]
 
 # Feature: "alloc" enables support for heap allocation on "no_std"
 # platforms, requires nightly.
