@@ -1,5 +1,6 @@
 // TODO restore #![deny(missing_docs)]
 
+use ockam_core::compat::{vec::Vec, string::String};
 use serde_big_array::big_array;
 
 big_array! { BigArray; }

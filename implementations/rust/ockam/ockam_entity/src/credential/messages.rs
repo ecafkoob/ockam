@@ -2,6 +2,7 @@ use crate::{
     CredentialAttribute, CredentialFragment2, CredentialOffer, CredentialPresentation,
     CredentialRequest, ProofRequestId,
 };
+use ockam_core::compat::{vec::Vec, string::String};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

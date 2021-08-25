@@ -1,5 +1,6 @@
 use super::CredentialAttribute;
 use serde::{Deserialize, Serialize};
+use ockam_core::compat::vec::Vec;
 use signature_bbs_plus::BlindSignature;
 
 /// A partial credential that will be completed by the holder

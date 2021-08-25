@@ -5,6 +5,7 @@ use crate::{
     Lease, OfferId, PresentationManifest, ProfileChangeEvent, ProfileIdentifier, ProofRequestId,
     TTL,
 };
+use ockam_core::compat::{vec::Vec, string::String};
 use ockam_core::{Address, Route};
 use serde::{Deserialize, Serialize};
 
