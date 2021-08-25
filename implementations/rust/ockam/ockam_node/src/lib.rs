@@ -23,7 +23,7 @@ extern crate tracing;
 #[cfg(feature = "std")]
 pub use tokio;
 #[cfg(not(feature = "std"))]
-pub use ockam_executor::tokio;
+pub use ockam_executor::{interrupt, tokio}; // TODO move interrupt to ockam_core
 
 mod address_record;
 mod context;

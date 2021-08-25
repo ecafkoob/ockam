@@ -16,7 +16,7 @@ pub struct VaultMutex<V>(Mutex<RefCell<Option<V>>>);
 #[cfg(not(feature = "std"))]
 use core::cell::RefCell;
 
-impl<V> Clone for VaultMutex<V> {
+impl<V: Clone> Clone for VaultMutex<V> {
     fn clone(&self) -> Self {
         #[cfg(feature = "std")]
         return Self(self.0.clone());
