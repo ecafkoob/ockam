@@ -2,8 +2,8 @@ use crate::relay::{RelayMessage, WorkerRelay};
 use crate::tokio::runtime::Runtime;
 use crate::tokio::sync::mpsc::{channel, Sender};
 use crate::{Context, Executor, Mailbox, NodeMessage};
-use ockam_core::Address;
 use ockam_core::compat::sync::Arc;
+use ockam_core::Address;
 #[cfg(feature = "std")]
 use tracing_subscriber::{filter::LevelFilter, fmt, EnvFilter};
 

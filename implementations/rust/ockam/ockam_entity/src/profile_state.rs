@@ -1,4 +1,7 @@
-use ockam_core::compat::{vec::Vec, string::{String, ToString}};
+use ockam_core::compat::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use ockam_core::{allow, deny, Result, Route};
 use ockam_vault::{KeyIdVault, PublicKey, Secret, SecretAttributes};
 use ockam_vault_sync_core::VaultSync;
@@ -26,9 +29,9 @@ use signature_bbs_plus::{MessageGenerators, ProofOfPossession};
 use signature_core::challenge::Challenge;
 use signature_core::lib::{HiddenMessage, Message, Nonce, ProofMessage};
 
-#[cfg(not(feature = "std"))]
+#[cfg(feature = "unsafe_random")]
 use ockam_core::compat::rand::{thread_rng, RngCore};
-#[cfg(feature = "std")]
+#[cfg(not(feature = "unsafe_random"))]
 use rand::{thread_rng, CryptoRng, RngCore};
 
 /// Profile implementation
@@ -50,10 +53,8 @@ impl ProfileState {
         change_events: Changes,
         contacts: Contacts,
         vault: VaultSync,
-        #[cfg(not(feature = "unsafe_random"))]
-        rng: impl RngCore + CryptoRng + Clone,
-        #[cfg(feature = "unsafe_random")]
-        rng: impl RngCore + Clone,
+        #[cfg(not(feature = "unsafe_random"))] rng: impl RngCore + CryptoRng + Clone,
+        #[cfg(feature = "unsafe_random")] rng: impl RngCore + Clone,
     ) -> Self {
         Self {
             id: identifier,

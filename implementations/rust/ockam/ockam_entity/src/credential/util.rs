@@ -1,6 +1,6 @@
 use super::CredentialAttributeSchema;
 use core::fmt;
-use ockam_core::compat::{vec::Vec, string::String};
+use ockam_core::compat::{string::String, vec::Vec};
 
 use serde::{
     de::{Error as DError, SeqAccess, Visitor},

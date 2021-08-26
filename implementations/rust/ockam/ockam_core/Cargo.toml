@@ -38,7 +38,7 @@ alloc = ["core2/alloc", "core2/nightly", "heapless", "hex/alloc", "serde/alloc",
 # cryptographically secure implementations.
 # WARNING: Under no circumstances should this ever be enabled in
 #          production builds!
-unsafe_random  = []
+unsafe_random = []
 
 [dependencies]
 async-trait = "0.1.42"

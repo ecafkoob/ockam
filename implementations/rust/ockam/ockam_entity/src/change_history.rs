@@ -5,7 +5,7 @@ use crate::{
     EntityError, EventIdentifier, KeyAttributes, MetaKeyAttributes, ProfileChange,
     ProfileChangeEvent, ProfileChangeProof, ProfileVault, SignatureType,
 };
-use ockam_core::compat::{vec::Vec, string::ToString};
+use ockam_core::compat::{string::ToString, vec::Vec};
 use ockam_core::{allow, deny};
 use ockam_vault::{PublicKey, SecretAttributes};
 use ockam_vault_core::{SecretPersistence, SecretType, CURVE25519_SECRET_LENGTH};

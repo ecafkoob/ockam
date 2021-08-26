@@ -20,10 +20,10 @@ extern crate alloc;
 #[macro_use]
 extern crate tracing;
 
+#[cfg(not(feature = "std"))]
+pub use ockam_executor::{interrupt, tokio};
 #[cfg(feature = "std")]
 pub use tokio;
-#[cfg(not(feature = "std"))]
-pub use ockam_executor::{interrupt, tokio}; // TODO move interrupt to ockam_core
 
 mod address_record;
 mod context;
@@ -66,21 +66,11 @@ where
     F: Future + Send,
     F::Output: Send,
 {
-    println!("block_future::begin");
-
-    //let result = spin_on::spin_on(f);
-    let result = task::block_in_place(
-        move || {
-            let local = task::LocalSet::new();
-            local.block_on(rt, f)
-    });
-    //let result = my_spawn(rt, f);
-
-    println!("block_future::end");
-    return result;
+    task::block_in_place(move || {
+        let local = task::LocalSet::new();
+        local.block_on(rt, f)
+    })
 }
-#[cfg(not(feature = "std"))]
-pub use crate::tokio::runtime::block_future;
 
 #[doc(hidden)]
 #[cfg(feature = "std")]
@@ -91,3 +81,6 @@ where
 {
     task::spawn(f);
 }
+
+#[cfg(not(feature = "std"))]
+pub use crate::tokio::runtime::{block_future, spawn};

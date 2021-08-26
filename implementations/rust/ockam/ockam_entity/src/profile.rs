@@ -26,7 +26,7 @@ use crate::{
     ProfileChangeEvent, ProfileIdentifier, ProofRequestId, SecureChannels, SigningPublicKey,
     TrustPolicy, TTL,
 };
-use ockam_core::compat::{vec::Vec, string::String};
+use ockam_core::compat::{string::String, vec::Vec};
 use ockam_core::{Address, Result, Route};
 use ockam_vault::{PublicKey, Secret};
 use signature_bls::SecretKey;

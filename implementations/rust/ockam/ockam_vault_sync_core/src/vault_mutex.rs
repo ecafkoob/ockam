@@ -12,11 +12,11 @@ pub struct VaultMutex<V>(Arc<Mutex<V>>);
 
 /// Vault inside Mutex RefCell Option (no_std)
 #[cfg(not(feature = "std"))]
-pub struct VaultMutex<V>(Mutex<RefCell<Option<V>>>);
-#[cfg(not(feature = "std"))]
 use core::cell::RefCell;
+#[cfg(not(feature = "std"))]
+pub struct VaultMutex<V>(Mutex<RefCell<Option<V>>>);
 
-impl<V: Clone> Clone for VaultMutex<V> {
+impl<V> Clone for VaultMutex<V> {
     fn clone(&self) -> Self {
         #[cfg(feature = "std")]
         return Self(self.0.clone());

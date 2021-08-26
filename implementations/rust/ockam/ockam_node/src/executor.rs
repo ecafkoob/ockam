@@ -3,8 +3,8 @@
 use crate::{relay::RelayMessage, router::Router, NodeMessage};
 use ockam_core::{Address, Result};
 
-use core::future::Future;
 use crate::tokio::{runtime::Runtime, sync::mpsc::Sender};
+use core::future::Future;
 use ockam_core::compat::sync::Arc;
 
 /// Ockam node and worker executor
@@ -67,6 +67,5 @@ impl Executor {
             crate::tokio::runtime::execute(&rt, async move { self.router.run().await.unwrap() });
             Ok(())
         }
-
     }
 }

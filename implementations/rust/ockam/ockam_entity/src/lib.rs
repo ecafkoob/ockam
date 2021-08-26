@@ -30,11 +30,7 @@ pub use identifiers::*;
 pub use key_attributes::*;
 pub use lease::*;
 use ockam_channel::SecureChannelVault;
-use ockam_core::compat::{
-    collections::HashMap,
-    string::String,
-    vec::Vec,
-};
+use ockam_core::compat::{collections::HashMap, string::String, vec::Vec};
 use ockam_core::{Address, Message, Result};
 use ockam_node::{block_future, Context};
 use ockam_vault::{Hasher, KeyIdVault, SecretVault, Signer, Verifier};
