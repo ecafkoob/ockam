@@ -221,7 +221,7 @@ impl Worker for StreamConsumer {
         warn!(
             "Unhandled message for consumer {}: {:?}", // TODO: attempt to get protocol ID
             ctx.address(),
-            msg.body()
+            msg.as_body(),
         );
         Ok(())
     }
