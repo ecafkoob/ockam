@@ -429,7 +429,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "credentials"
+name = "credentials_example"
 version = "0.1.0"
 dependencies = [
  "hex",
@@ -635,15 +635,6 @@ dependencies = [
  "duct",
  "rand 0.8.4",
  "ron",
- "serde",
-]
-
-[[package]]
-name = "examples"
-version = "0.0.0"
-dependencies = [
- "ockam",
- "ockam_node",
  "serde",
 ]
 
@@ -1396,47 +1387,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ca88d725a0a943b096803bd34e73a4437208b6077654cc4ecb2947a5f91618d"
 
 [[package]]
-name = "management_app"
-version = "0.1.0"
-dependencies = [
- "lazy_static",
- "ockam",
- "ockam_vault",
- "ockam_vault_sync_core",
- "okta-plugin",
- "rand 0.7.3",
- "serde",
- "serde_bare 0.3.0",
- "serde_json",
- "structopt",
-]
-
-[[package]]
-name = "management_service"
-version = "0.1.0"
-dependencies = [
- "arrayref",
- "base64-url",
- "colored",
- "isahc",
- "lazy_static",
- "ockam",
- "ockam_key_exchange_core",
- "ockam_key_exchange_x3dh",
- "ockam_vault",
- "ockam_vault_sync_core",
- "okta-plugin",
- "percent-encoding",
- "rand 0.7.3",
- "serde",
- "serde_bare 0.3.0",
- "serde_json",
- "structopt",
- "tokio 0.2.25",
- "warp",
-]
-
-[[package]]
 name = "matchers"
 version = "0.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1609,6 +1559,15 @@ dependencies = [
  "cfg-if 0.1.10",
  "libc",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "node_examples"
+version = "0.0.0"
+dependencies = [
+ "ockam",
+ "ockam_node",
+ "serde",
 ]
 
 [[package]]
@@ -1883,6 +1842,7 @@ version = "0.16.0-dev"
 dependencies = [
  "futures-channel",
  "futures-util",
+ "ockam",
  "ockam_core",
  "ockam_node",
  "ockam_transport_core",
@@ -1981,6 +1941,63 @@ dependencies = [
  "serde_bare 0.3.0",
  "serde_json",
  "structopt",
+]
+
+[[package]]
+name = "okta_example_management_app"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "ockam",
+ "ockam_vault",
+ "ockam_vault_sync_core",
+ "okta-plugin",
+ "rand 0.7.3",
+ "serde",
+ "serde_bare 0.3.0",
+ "serde_json",
+ "structopt",
+]
+
+[[package]]
+name = "okta_example_management_service"
+version = "0.1.0"
+dependencies = [
+ "arrayref",
+ "base64-url",
+ "colored",
+ "isahc",
+ "lazy_static",
+ "ockam",
+ "ockam_key_exchange_core",
+ "ockam_key_exchange_x3dh",
+ "ockam_vault",
+ "ockam_vault_sync_core",
+ "okta-plugin",
+ "percent-encoding",
+ "rand 0.7.3",
+ "serde",
+ "serde_bare 0.3.0",
+ "serde_json",
+ "structopt",
+ "tokio 0.2.25",
+ "warp",
+]
+
+[[package]]
+name = "okta_example_truck"
+version = "0.1.0"
+dependencies = [
+ "colored",
+ "ockam",
+ "ockam_key_exchange_core",
+ "ockam_key_exchange_x3dh",
+ "ockam_vault",
+ "ockam_vault_sync_core",
+ "okta-plugin",
+ "rand 0.7.3",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -2161,7 +2178,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ports"
+name = "ports_example"
 version = "0.1.0"
 dependencies = [
  "ockam",
@@ -3231,22 +3248,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "truck"
-version = "0.1.0"
-dependencies = [
- "colored",
- "ockam",
- "ockam_key_exchange_core",
- "ockam_key_exchange_x3dh",
- "ockam_vault",
- "ockam_vault_sync_core",
- "okta-plugin",
- "rand 0.7.3",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "try-lock"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3306,7 +3307,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tunnel"
+name = "tunnel_example"
 version = "0.0.0"
 dependencies = [
  "ockam",
