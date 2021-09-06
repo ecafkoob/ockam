@@ -13,10 +13,13 @@ jobs:
     environment:
       name: artifacts
     steps:
+      - name: Get Timestamp
+        run: echo timestamp=$(date +%s) >> $GITHUB_ENV
+
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@a3b37769d28120b0a633f6985f454bbc6293c946
         with:
           token: ${{ secrets.SECRET_TOKEN }}
           repository: ockam-network/artifacts
           event-type: crate_release
-          client-payload: '{"sha": "${{ github.sha }}"}'
+          client-payload: '{"sha": "${{ github.sha }}", "timestamp": "${{ env.timestamp }}"}'
