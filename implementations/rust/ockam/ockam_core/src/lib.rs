@@ -45,6 +45,18 @@ mod error;
 mod message;
 mod processor;
 mod routing;
+/// traits
+pub mod traits {
+    use crate::compat::boxed::Box;
+    use async_trait::async_trait;
+
+    #[async_trait]
+    /// Async version of the Clone trait
+    pub trait AsyncClone: Sized {
+        /// Returns a copy of the value.
+        async fn async_clone(&self) -> Self;
+    }
+}
 mod worker;
 
 pub use error::*;

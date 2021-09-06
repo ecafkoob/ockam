@@ -2,15 +2,16 @@ use crate::{
     KeyExchangeCompleted, SecureChannelListener, SecureChannelNewKeyExchanger, SecureChannelVault,
     SecureChannelWorker,
 };
-#[cfg(not(feature = "std"))]
-use ockam_core::compat::rand::random;
 use ockam_core::{Address, Result, Route};
 use ockam_key_exchange_core::KeyExchanger;
 use ockam_node::Context;
-#[cfg(feature = "std")]
-use rand::random;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info};
+
+#[cfg(not(feature = "std"))]
+use ockam_core::compat::rand::random;
+#[cfg(feature = "std")]
+use rand::random;
 
 /// SecureChannel info returned from start_initiator_channel
 /// Auth hash can be used for further authentication of the channel
@@ -53,8 +54,8 @@ impl SecureChannel {
     /// Create and start channel listener with given address.
     pub async fn create_listener_extended<
         A: Into<Address>,
-        N: SecureChannelNewKeyExchanger,
-        V: SecureChannelVault,
+        N: SecureChannelNewKeyExchanger + Sync,
+        V: SecureChannelVault + Sync,
     >(
         ctx: &Context,
         address: A,

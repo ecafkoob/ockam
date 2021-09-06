@@ -30,7 +30,14 @@ pub use identifiers::*;
 pub use key_attributes::*;
 pub use lease::*;
 use ockam_channel::SecureChannelVault;
-use ockam_core::compat::{collections::HashMap, string::String, vec::Vec};
+use ockam_core::compat::{
+    boxed::Box,
+    collections::HashMap,
+    string::String,
+    vec::Vec,
+};
+use ockam_core::async_trait::async_trait;
+use ockam_core::traits::AsyncClone;
 use ockam_core::{Address, Message, Result};
 use ockam_node::{block_future, Context};
 use ockam_vault::{Hasher, KeyIdVault, SecretVault, Signer, Verifier};
@@ -49,15 +56,22 @@ pub struct Handle {
 impl Clone for Handle {
     fn clone(&self) -> Self {
         block_future(&self.ctx.runtime(), async move {
-            Handle {
-                ctx: self
-                    .ctx
-                    .new_context(Address::random(0))
-                    .await
-                    .expect("new_context failed"),
-                address: self.address.clone(),
-            }
+            self.async_clone().await
         })
+    }
+}
+
+#[async_trait]
+impl AsyncClone for Handle {
+    async fn async_clone(&self) -> Handle {
+        Handle {
+            ctx: self
+                .ctx
+                .new_context(Address::random(0))
+                .await
+                .expect("new_context failed"),
+            address: self.address.clone(),
+        }
     }
 }
 

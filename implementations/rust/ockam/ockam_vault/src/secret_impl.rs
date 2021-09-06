@@ -2,6 +2,7 @@ use crate::software_vault::{SoftwareVault, VaultEntry};
 use crate::VaultError;
 use arrayref::array_ref;
 use core::convert::TryInto;
+use ockam_core::compat::boxed::Box;
 use ockam_vault_core::{
     KeyId, KeyIdVault, PublicKey, Secret, SecretAttributes, SecretKey, SecretPersistence,
     SecretType, SecretVault, AES128_SECRET_LENGTH, AES256_SECRET_LENGTH, CURVE25519_SECRET_LENGTH,
@@ -67,6 +68,8 @@ impl SoftwareVault {
     }
 }
 
+use ockam_core::async_trait::async_trait;
+#[async_trait]
 impl SecretVault for SoftwareVault {
     /// Generate fresh secret. Only Curve25519 and Buffer types are supported
     fn secret_generate(&mut self, attributes: SecretAttributes) -> ockam_core::Result<Secret> {
@@ -116,6 +119,11 @@ impl SecretVault for SoftwareVault {
         Ok(Secret::new(self.next_id))
     }
 
+    /// Generate fresh secret. Only Curve25519 and Buffer types are supported
+    async fn async_secret_generate(&mut self, attributes: SecretAttributes) -> ockam_core::Result<Secret> {
+        self.secret_generate(attributes)
+    }
+
     fn secret_import(
         &mut self,
         secret: &[u8],
@@ -129,6 +137,14 @@ impl SecretVault for SoftwareVault {
             VaultEntry::new(key_id_opt, attributes, SecretKey::new(secret.to_vec())),
         );
         Ok(Secret::new(self.next_id))
+    }
+
+    async fn async_secret_import(
+        &mut self,
+        secret: &[u8],
+        attributes: SecretAttributes,
+    ) -> ockam_core::Result<Secret> {
+        self.secret_import(secret, attributes)
     }
 
     fn secret_export(&mut self, context: &Secret) -> ockam_core::Result<SecretKey> {
@@ -170,12 +186,22 @@ impl SecretVault for SoftwareVault {
         }
     }
 
+    /// Extract public key from secret. Only Curve25519 type is supported
+    async fn async_secret_public_key_get(&mut self, context: Secret) -> ockam_core::Result<PublicKey> {
+        self.secret_public_key_get(&context)
+    }
+
     /// Remove secret from memory
     fn secret_destroy(&mut self, context: Secret) -> ockam_core::Result<()> {
         if let Some(mut k) = self.entries.remove(&context.index()) {
             k.zeroize();
         }
         Ok(())
+    }
+
+    /// Remove secret from memory
+    async fn async_secret_destroy(&mut self, context: Secret) -> ockam_core::Result<()> {
+        self.secret_destroy(context)
     }
 }
 

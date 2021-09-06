@@ -44,7 +44,7 @@ heapless = { version = "0.7", features = [ "mpmc_large" ], optional = true }
 ockam_node_no_std = { path = "../ockam_node_no_std", version = "0.4.0-dev"     , default-features = false, optional = true }
 
 ockam_executor = { path = "/Users/antoine/Ockam/ockam_executor.git", default-features = false, optional = true }
-
+cortex-m-semihosting = { version = "0.3.7" }
 
 [dev-dependencies]
 async-trait =  { version = "0.1" }

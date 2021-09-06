@@ -1,7 +1,4 @@
-use ockam_core::compat::{
-    string::{String, ToString},
-    vec::Vec,
-};
+use ockam_core::compat::{boxed::Box, string::{String, ToString}, vec::Vec};
 use ockam_core::{allow, deny, Result, Route};
 use ockam_vault::{KeyIdVault, PublicKey, Secret, SecretAttributes};
 use ockam_vault_sync_core::VaultSync;
@@ -21,6 +18,8 @@ use crate::{
     ProfileVault, ProofBytes, ProofRequestId, SigningPublicKey, TTL,
 };
 use core::convert::TryInto;
+use ockam_core::async_trait::async_trait;
+use ockam_core::traits::AsyncClone;
 use ockam_core::compat::collections::{HashMap, HashSet};
 use ockam_vault_core::{SecretPersistence, SecretType, SecretVault, CURVE25519_SECRET_LENGTH};
 use sha2::digest::{generic_array::GenericArray, Digest, FixedOutput};
@@ -70,14 +69,21 @@ impl ProfileState {
     pub(crate) fn change_history(&self) -> &ProfileChangeHistory {
         &self.change_history
     }
+
     /// Return clone of Vault
     pub fn vault(&self) -> VaultSync {
         self.vault.clone()
     }
 
+    /// Return clone of Vault
+    pub async fn async_vault(&self) -> VaultSync {
+        self.vault.async_clone().await
+    }
+
     /// Create ProfileState
-    pub(crate) fn create(mut vault: VaultSync) -> Result<Self> {
-        let initial_event_id = EventIdentifier::initial(vault.clone());
+    pub(crate) async fn async_create(mut vault: VaultSync) -> Result<Self> {
+        let hasher = vault.async_start_another().await.unwrap();
+        let initial_event_id = EventIdentifier::async_initial(hasher).await;
 
         let key_attribs = KeyAttributes::with_attributes(
             Profile::PROFILE_UPDATE.to_string(),
@@ -88,20 +94,20 @@ impl ProfileState {
             )),
         );
 
-        let create_key_event = Self::create_key_static(
+        let create_key_event = Self::async_create_key_static(
             initial_event_id,
             key_attribs.clone(),
             ProfileEventAttributes::new(),
             None,
             &mut vault,
-        )?;
+        ).await?;
 
         let create_key_change =
             ProfileChangeHistory::find_key_change_in_event(&create_key_event, &key_attribs)
                 .ok_or(InvalidInternalState)?;
 
         let public_key = ProfileChangeHistory::get_change_public_key(&create_key_change)?;
-        let public_key_id = vault.compute_key_id_for_public_key(&public_key)?;
+        let public_key_id = vault.async_compute_key_id_for_public_key(&public_key).await?;
         let public_key_id = ProfileIdentifier::from_key_id(public_key_id);
 
         let profile = Self::new(
@@ -134,6 +140,15 @@ impl ProfileState {
 
         let key_id = self.vault.compute_key_id_for_public_key(&public_key)?;
         self.vault.get_secret_by_key_id(&key_id)
+    }
+
+    pub async fn async_get_root_secret(&mut self) -> Result<Secret> {
+        let public_key = ProfileChangeHistory::get_current_profile_update_public_key(
+            self.change_history().as_ref(),
+        )?;
+
+        let key_id = self.vault.async_compute_key_id_for_public_key(&public_key).await?;
+        self.vault.async_get_secret_by_key_id(&key_id).await
     }
 
     pub fn add_credential(&mut self, credential: EntityCredential) -> Result<()> {
@@ -170,15 +185,34 @@ impl ProfileState {
     }
 }
 
+#[async_trait]
+impl AsyncClone for ProfileState {
+    async fn async_clone(&self) -> ProfileState {
+        self.clone()
+    }
+}
+
+#[async_trait]
 impl Identity for ProfileState {
     fn identifier(&self) -> Result<ProfileIdentifier> {
         Ok(self.id.clone())
     }
 
-    fn create_key<S: Into<String>>(&mut self, label: S) -> Result<()> {
+    async fn async_identifier(&self) -> Result<ProfileIdentifier> {
+        Ok(self.id.clone())
+    }
+
+    fn create_key<S: Into<String> + Send + 'static>(&mut self, label: S) -> Result<()> {
         let key_attribs = KeyAttributes::new(label.into());
 
-        let event = { self.create_key(key_attribs, ProfileEventAttributes::new())? };
+        let event = { self.sync_create_key(key_attribs, ProfileEventAttributes::new())? };
+        self.add_change(event)
+    }
+
+    async fn async_create_key<S: Into<String> + Send + 'static>(&mut self, label: S) -> Result<()> {
+        let key_attribs = KeyAttributes::new(label.into());
+
+        let event = { self.async_create_key(key_attribs, ProfileEventAttributes::new()).await? };
         self.add_change(event)
     }
 
@@ -226,6 +260,18 @@ impl Identity for ProfileState {
 
         Authentication::generate_proof(channel_state.as_ref(), &root_secret, &mut self.vault)
     }
+
+    /// Generate Proof of possession of [`Profile`].
+    /// channel_state should be tied to channel's cryptographical material (e.g. h value for Noise XX)
+    async fn async_create_auth_proof<S: AsRef<[u8]> + Send + Sync>(
+        &mut self,
+        channel_state: S,
+    ) -> Result<AuthenticationProof> {
+        let root_secret = self.async_get_root_secret().await?;
+
+        Authentication::async_generate_proof(channel_state.as_ref(), &root_secret, &mut self.vault).await
+    }
+
     /// Verify Proof of possession of [`Profile`] with given [`ProfileIdentifier`].
     /// channel_state should be tied to channel's cryptographical material (e.g. h value for Noise XX)
     fn verify_auth_proof<S: AsRef<[u8]>, P: AsRef<[u8]>>(
@@ -246,6 +292,26 @@ impl Identity for ProfileState {
         )
     }
 
+    /// Verify Proof of possession of [`Profile`] with given [`ProfileIdentifier`].
+    /// channel_state should be tied to channel's cryptographical material (e.g. h value for Noise XX)
+    async fn async_verify_auth_proof<S: AsRef<[u8]>  + Send + Sync, P: AsRef<[u8]> + Send + Sync>(
+        &mut self,
+        channel_state: S,
+        responder_contact_id: &ProfileIdentifier,
+        proof: P,
+    ) -> Result<bool> {
+        let contact = self
+            .async_get_contact(responder_contact_id).await?
+            .ok_or(EntityError::ContactNotFound)?;
+
+        Authentication::async_verify_proof(
+            channel_state.as_ref(),
+            &contact.get_profile_update_public_key()?,
+            proof.as_ref(),
+            &mut self.vault,
+        ).await
+    }
+
     fn add_change(&mut self, change_event: ProfileChangeEvent) -> Result<()> {
         let slice = core::slice::from_ref(&change_event);
         if ProfileChangeHistory::check_consistency(self.change_history.as_ref(), &slice) {
@@ -256,6 +322,10 @@ impl Identity for ProfileState {
 
     fn get_changes(&self) -> Result<Changes> {
         Ok(self.change_history.as_ref().to_vec())
+    }
+
+    async fn async_get_changes(&self) -> Result<Changes> {
+        self.get_changes()
     }
 
     /// Verify whole event chain of current [`Profile`]
@@ -294,8 +364,16 @@ impl Identity for ProfileState {
         ))
     }
 
+    async fn async_as_contact(&mut self) -> Result<Contact> {
+        self.as_contact()
+    }
+
     fn get_contact(&mut self, id: &ProfileIdentifier) -> Result<Option<Contact>> {
         Ok(self.contacts.get(id).cloned())
+    }
+
+    async fn async_get_contact(&mut self, id: &ProfileIdentifier) -> Result<Option<Contact>> {
+        self.get_contact(id)
     }
 
     fn verify_contact<C: Into<Contact>>(&mut self, contact: C) -> Result<bool> {
@@ -305,9 +383,27 @@ impl Identity for ProfileState {
         allow()
     }
 
+    async fn async_verify_contact<C: Into<Contact> + Send>(&mut self, contact: C) -> Result<bool> {
+        let contact = contact.into();
+        contact.async_verify(&mut self.vault).await?;
+
+        allow()
+    }
+
     fn verify_and_add_contact<C: Into<Contact>>(&mut self, contact: C) -> Result<bool> {
         let contact = contact.into();
         if !self.verify_contact(contact.clone())? {
+            return Err(ContactVerificationFailed.into());
+        }
+
+        self.contacts.insert(contact.identifier().clone(), contact);
+
+        allow()
+    }
+
+    async fn async_verify_and_add_contact<C: Into<Contact> + Send>(&mut self, contact: C) -> Result<bool> {
+        let contact = contact.into();
+        if !self.async_verify_contact(contact.clone()).await? {
             return Err(ContactVerificationFailed.into());
         }
 

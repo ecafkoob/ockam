@@ -1,3 +1,4 @@
+use ockam_core::compat::vec::Vec;
 use crate::{
     protocols::{ParserFragment, ProtocolPayload},
     Address, Any, Context, Message, ProtocolId, Result, Route, Routed, TransportMessage, Worker,

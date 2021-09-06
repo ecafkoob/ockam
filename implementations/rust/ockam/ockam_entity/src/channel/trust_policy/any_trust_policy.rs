@@ -1,4 +1,6 @@
 use crate::{SecureChannelTrustInfo, TrustPolicy};
+use ockam_core::async_trait::async_trait;
+use ockam_core::compat::boxed::Box;
 use ockam_core::Result;
 
 #[derive(Clone)]
@@ -14,9 +16,23 @@ impl<F: TrustPolicy, S: TrustPolicy> AnyTrustPolicy<F, S> {
     }
 }
 
-impl<F: TrustPolicy, S: TrustPolicy> TrustPolicy for AnyTrustPolicy<F, S> {
+#[async_trait]
+impl<F: TrustPolicy + Sync, S: TrustPolicy + Sync> ockam_core::traits::AsyncClone for AnyTrustPolicy<F, S> {
+    async fn async_clone(&self) -> AnyTrustPolicy<F, S> {
+        AnyTrustPolicy {
+            first: self.first.async_clone().await,
+            second: self.second.async_clone().await
+        }
+    }
+}
+
+#[async_trait]
+impl<F: TrustPolicy + Sync, S: TrustPolicy + Sync> TrustPolicy for AnyTrustPolicy<F, S> {
     fn check(&self, trust_info: &SecureChannelTrustInfo) -> Result<bool> {
         Ok(self.first.check(trust_info)? || self.second.check(trust_info)?)
+    }
+    async fn async_check(&self, trust_info: &SecureChannelTrustInfo) -> Result<bool> {
+        Ok(self.first.async_check(trust_info).await? || self.second.async_check(trust_info).await?)
     }
 }
 
@@ -30,8 +46,17 @@ mod test {
         #[derive(Clone)]
         struct TrustPolicyStub(bool);
 
+        impl AsyncClone for TrustPolicyStub {
+            async fn async_clone(&self) -> TrustPolicyStub {
+                self.clone()
+            }
+        }
+
         impl TrustPolicy for TrustPolicyStub {
             fn check(&self, _trust_info: &SecureChannelTrustInfo) -> Result<bool> {
+                Ok(self.0)
+            }
+            async fn async_check(&self, _trust_info: &SecureChannelTrustInfo) -> Result<bool> {
                 Ok(self.0)
             }
         }
